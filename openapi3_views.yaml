@@ -1,0 +1,295 @@
+openapi: 3.0.3
+info:
+  title: 视图API
+  description: 这是一个对视图进行创建、修改、检索、和删除的API
+  contact:
+    name: 杜锐
+    email: durui@zdns.cn
+  # license:
+  #   name: Apache 2.0
+  #   url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 3.11.0
+servers:
+  - url: http://localhost:8080
+#   - url: https://localhost:4567
+# security:
+#   - BasicAuth
+paths:
+  /views:
+    get:
+      tags:
+        - views
+      summary: 视图查看
+      description: 查看视图信息
+      parameters:
+      - name: with_add
+        in: query
+        description: 是否显示ADD视图信息
+        schema:
+          enum:
+            - 'yes'
+            - 'no'
+          type: string
+      - name: search_attrs[name|comment]
+        in: query
+        description: search_attrs[name|comment]
+        schema:
+          type: string
+          pattern: ^\D[a-zA-Z0-9_\\u4e00-\\u9fa5]*$
+          maxLength: 32
+      - name: sort_col
+        in: query
+        description: 按照某字段排序
+        schema:
+          type: string
+      - name: sort_ord
+        in: query
+        description: sort_ord
+        schema:
+          type: string
+      - name: page_num
+        in: query
+        description: page_num
+        schema:
+          type: integer
+      - name: page_size
+        in: query
+        description: page_size
+        schema:
+          type: integer
+      responses:
+        200:
+          description: 查看成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  resources:
+                    items:
+                      $ref: '#/components/schemas/view'
+                  page_num:
+                    type: string
+                  page_size:
+                    type: string
+                  total_size:
+                    type: integer
+    post:
+      tags:
+        - views
+      summary: 视图创建
+      description: 添加新视图信息
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/view'
+              required:
+                - name
+                - owners
+                - filter_aaaa
+                - recursion_enable
+                - allow_recursive
+                - non_recursive_acls
+                - ecs_recurse_domains
+                - ecs_exact_match
+                - bind_ips
+                # - try_final_after_forward
+                - fail_forwarder
+                - dns64s
+                - limit_ips
+                - need_tsig_key
+                - acls
+                - black_acls
+                - filter_aaaa_ips
+                - tsig_host
+                - comment
+        required: true
+      responses:
+        200:
+          description: 添加成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/view'
+      # servers:
+      #   - url: http://localhost:3333
+    put:
+      tags:
+        - views
+      summary: 视图编辑
+      description: 更改视图的内容
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                ids:
+                  items:
+                    type: string
+                    pattern: ^\D[a-zA-Z0-9_\\u4e00-\\u9fa5]*$
+                    maxLength: 32
+              allOf:
+                - $ref: '#/components/schemas/view'
+              required:
+                - filter_aaaa
+                - recursion_enable
+                - non_recursive_acls
+                - ecs_recurse_domains
+                - ecs_exact_match
+                - bind_ips
+                - try_final_after_forward
+                - fail_forwarder
+                - dns64s
+                - limit_ips
+                - need_tsig_key
+                - tsig_host
+                - acls
+                - black_acls
+                - ids
+        required: true
+      responses:
+        200:
+          description: 更改成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/view'
+    delete:
+      tags:
+        - views
+      summary: 视图删除
+      description: 删除视图
+      responses:
+        200:
+          description: 删除成功
+          content:
+            application/json:
+              schema:
+                properties:
+                  result:
+                    enum:
+                      - succeed
+                    type: string
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+  schemas:
+    view:
+      type: object
+      properties:
+        id:
+          type: string
+          pattern: ^\D[a-zA-Z0-9_\\u4e00-\\u9fa5]*$
+          maxLength: 32
+        name:
+          type: string
+          pattern: ^\D[a-zA-Z0-9_\\u4e00-\\u9fa5]*$
+          maxLength: 32
+        priority:
+          type: integer
+        dns64s:
+          items:
+            type: string
+        fail_forwarder:
+          type: string
+        recursion_enable:
+          enum:
+            - 'yes'
+            - 'no'
+          type: string
+        allow_recursive:
+          enum:
+            - 'custom'
+            - 'all'
+          type: string
+        recursive_acls:
+          items:
+            type: string
+        non_recursive_acls:
+          items:
+            type: string
+        acls:
+          items:
+            type: string
+        black_acls:
+          items:
+            type: string
+        owners:
+          items:
+            type: string
+        filter_aaaa:
+          enum:
+            - 'yes'
+            - 'no'
+          type: string
+        filter_aaaa_ips:
+          items:
+            type: string
+        bind_ips:
+          items:
+            type: string
+        query_source:
+          type: string
+        working_query_source:
+          type: string
+        backup_query_sources:
+          items:
+            type: string
+        state:
+          type: string
+        href:
+          type: string
+        need_tsig_key:
+          enum:
+            - 'yes'
+            - 'no'
+          type: string
+        tsig_name:
+          type: string
+        tsig_host:
+          items:
+            type: string
+        tsig_algorithm:
+          type: string
+        tsig_secret:
+          type: string
+        zones:
+          items:
+            type: string
+        stub_zones:
+          items:
+            type: string
+        forward_zones:
+          items:
+            type: string
+        limit_ips:
+          items:
+            type: string
+        try_final_after_forward:
+          enum:
+            - 'yes'
+            - 'no'
+          type: string
+        ecs_recurse_domains:
+          items:
+            type: string
+        ecs_exact_match:
+          enum:
+            - 'yes'
+            - 'no'
+          type: string
+        filter_aaaa_exempt:
+          items:
+            type: string
+        comment:
+          type: string
+externalDocs:
+  url: ./swagger(user_groups).yaml
+# servers:
+#   # Added by API Auto Mocking Plugin
+#   - description: SwaggerHub API Auto Mocking
+#     url: https://virtserver.swaggerhub.com/durui/views/3.11.0
