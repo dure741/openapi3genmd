@@ -29,7 +29,9 @@ func main() {
 		return
 	}
 	fmt.Println("Openapi3gendoc start...")
-	gendoc()
+	for _, str := range gendoc() {
+		fmt.Println(str)
+	}
 	fmt.Println("General markdown finished")
 }
 
@@ -37,8 +39,9 @@ func main() {
 func gendoc() []string {
 	info := genInfo()
 	servers := genServers()
-
+	paths := genPaths()
 	result := append(info, servers...)
+	result = append(result, paths...)
 	return result
 }
 
@@ -91,20 +94,95 @@ func genServers() []string {
 	var result []string
 	result = make([]string, 0)
 	//录入
-	servers := openapi.Servers
-	if len(servers) != 0 {
-		result = append(result, "**服务端列表：**")
-		for _, server := range servers {
-			if len(server.URL) != 0 {
-				if len(server.Description) != 0 {
-					result = append(result, "- "+server.URL)
-					result = append(result, "    "+server.Description)
-				} else {
-					result = append(result, "- "+server.URL)
+	if openapi.Servers != nil {
+		servers := openapi.Servers
+		if len(servers) != 0 {
+			result = append(result, "**服务端列表：**")
+			for _, server := range servers {
+				if len(server.URL) != 0 {
+					if len(server.Description) != 0 {
+						result = append(result, "- "+server.URL)
+						result = append(result, "    "+server.Description)
+					} else {
+						result = append(result, "- "+server.URL)
+					}
 				}
 			}
 		}
 	}
 	//servers 中的variable未考虑，不输出
+	return result
+}
+
+//genPaths 生成api文档中最关键的内容
+func genPaths() []string {
+	//paths信息
+	var result []string
+	result = make([]string, 0)
+	//录入
+	paths := openapi.Paths
+	if len(paths) != 0 {
+		result = append(result, "## 接口信息")
+		for api, pathitem := range paths {
+			result = append(result, "### "+api)
+			if len(pathitem.Summary) != 0 {
+				result = append(result, "**"+pathitem.Summary+"**")
+			}
+			if len(pathitem.Description) != 0 {
+				result = append(result, "> "+pathitem.Description)
+			}
+			if pathitem.Servers != nil {
+				result = append(result, "**服务端列表：**")
+				for _, server := range pathitem.Servers {
+					if len(server.URL) != 0 {
+						result = append(result, "- "+server.URL)
+
+					}
+				}
+			}
+			//以上是基本信息，以下是不同请求方法信息
+			if pathitem.Get != nil {
+				result = append(result, "#### GET")
+				if len(pathitem.Get.Summary) != 0 {
+					result = append(result, "**"+pathitem.Get.Summary+"**")
+				}
+				if len(pathitem.Get.Description) != 0 {
+					result = append(result, "> "+pathitem.Get.Description)
+				}
+				fmt.Println(pathitem.Get)
+				fmt.Println("ll")
+			}
+			if pathitem.Post != nil {
+				result = append(result, "#### POST")
+				if len(pathitem.Post.Summary) != 0 {
+					result = append(result, "**"+pathitem.Post.Summary+"**")
+				}
+				if len(pathitem.Post.Description) != 0 {
+					result = append(result, "> "+pathitem.Post.Description)
+				}
+			}
+			if pathitem.Put != nil {
+				result = append(result, "#### PUT")
+				if len(pathitem.Put.Summary) != 0 {
+					result = append(result, "**"+pathitem.Put.Summary+"**")
+				}
+				if len(pathitem.Put.Description) != 0 {
+					result = append(result, "> "+pathitem.Put.Description)
+				}
+			}
+			if pathitem.Delete != nil {
+				result = append(result, "#### DELETE")
+				if len(pathitem.Delete.Summary) != 0 {
+					result = append(result, "**"+pathitem.Delete.Summary+"**")
+				}
+				if len(pathitem.Delete.Description) != 0 {
+					result = append(result, "> "+pathitem.Delete.Description)
+				}
+			}
+		}
+
+	}
+
+	//	fmt.Println(paths)
 	return result
 }
