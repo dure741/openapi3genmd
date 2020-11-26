@@ -34,8 +34,12 @@ func main() {
 }
 
 //gendoc 生成文档的函数，期间会调用各个内容的生成函数
-func gendoc() {
-	genInfo()
+func gendoc() []string {
+	info := genInfo()
+	servers := genServers()
+
+	result := append(info, servers...)
+	return result
 }
 
 //genInfo 在markdown中生成info信息
@@ -81,7 +85,26 @@ func genInfo() []string {
 	return result
 }
 
-// func content(content interface{}) {
-// 	if content!=nil
-
-// }
+//genServers 生成Servers的信息
+func genServers() []string {
+	//Servers信息
+	var result []string
+	result = make([]string, 0)
+	//录入
+	servers := openapi.Servers
+	if len(servers) != 0 {
+		result = append(result, "**服务端列表：**")
+		for _, server := range servers {
+			if len(server.URL) != 0 {
+				if len(server.Description) != 0 {
+					result = append(result, "- "+server.URL)
+					result = append(result, "    "+server.Description)
+				} else {
+					result = append(result, "- "+server.URL)
+				}
+			}
+		}
+	}
+	//servers 中的variable未考虑，不输出
+	return result
+}
